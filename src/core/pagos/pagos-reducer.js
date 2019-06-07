@@ -33,4 +33,11 @@ export default handleActions({
                 data
             };
         }),
+    ...handleApiAction(actionTypes.postPagar, {loadingField: 'loadingPagos', errorField: 'PagosError'},
+        (state, {payload: {data = []}}) => {
+            return {
+                ...state,
+                data
+            };
+        }),
 }, initialState);
