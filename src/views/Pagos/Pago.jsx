@@ -180,7 +180,6 @@ export default class Pago extends Component {
       this.props.actions.postPagar(data),
     ]).then(data =>{
       this.state.pago = data[0];
-      this.state.message = "Pago exitoso";
     }).catch(error => {
       this.setErrorMessage(error.message);
     });
