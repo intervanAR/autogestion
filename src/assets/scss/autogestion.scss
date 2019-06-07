@@ -1,0 +1,19 @@
+// variables and mixins
+@import "autogestion/variables";
+@import "autogestion/mixins";
+@import "autogestion/shadows";
+
+// plugin css
+@import "autogestion/plugins/plugin-nouislider";
+@import "autogestion/plugins/plugin-perfect-scrollbar";
+@import "autogestion/plugins/plugin-react-datetime";
+@import "autogestion/plugins/plugin-react-bootstrap-sweetalert";
+@import "autogestion/plugins/plugin-react-chartist";
+@import "autogestion/plugins/plugin-react-big-calendar";
+@import "autogestion/plugins/plugin-react-jvectormap";
+@import "autogestion/plugins/plugin-react-table";
+@import "autogestion/plugins/plugin-react-tagsinput";
+
+// Core CSS
+@import "autogestion/misc";
+@import "autogestion/fileupload";
