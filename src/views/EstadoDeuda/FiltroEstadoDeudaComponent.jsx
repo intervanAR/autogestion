@@ -139,7 +139,7 @@ export default class FiltroEstadoDeudaComponent extends React.Component {
 		return (
 			<BlockComponent blocking={loading}>
 				<GridContainer>
-					<GridItem xs={4} sm={4} md={4}>
+					<GridItem xs={12} sm={6} >
 						<FormControl required className={classes.selectFormControl}>
 							{ AuthService.isLoggedIn()
 								?
@@ -195,31 +195,33 @@ export default class FiltroEstadoDeudaComponent extends React.Component {
 					</GridItem>
 					{ ! AuthService.isLoggedIn()
 						?
-							<div>
-								<GridItem xs={4} sm={4} md={4}>
-									<CustomInput
-										labelText="Número"
-										id="nummero"
-										formControlProps={{
-											fullWidth: false,
-											style: {marginLeft: "30px", paddingTop: "18px"}
-										}}
-										inputProps={{
-											required: true,
-											...this.bindValue('cuentaNro'),
-											type: 'Number'
-										}}
-										labelProps={{
-											style: {top: "0px"}
-										}}
-									/>
-								</GridItem>
-							</div>
+							<GridItem xs={12} sm={3} >
+								<CustomInput
+									labelText="Número"
+									id="nummero"
+									formControlProps={{
+										fullWidth: false,
+
+									}}
+									inputProps={{
+										required: true,
+										...this.bindValue('cuentaNro'),
+										type: 'Number'
+									}}
+									labelProps={{
+										style: {top: "0px"}
+									}}
+								/>
+							</GridItem>
 						:
 							<div></div>
 					}
-					<GridItem xs={12} sm={4} md={4}>
-						<Button color="primary" onClick={this.handleOnSearch}>Consultar</Button>
+					<GridItem xs={12} sm={3} >
+						<Button
+							fullWidth={true}
+							size="large"
+							color="primary"
+							onClick={this.handleOnSearch}>Consultar</Button>
 					</GridItem>
 				</GridContainer>
 				<div style={{color: "red"}}>{errorMessage}</div>

@@ -2,7 +2,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import EventNoteIcon from '@material-ui/icons/EventNote';
 import PermContactCalendarIcon from '@material-ui/icons/PermContactCalendar';
 import HomePage from '../views/Home/HomePage';
-import EstadoDeudaPage from '../views/EstadoDeuda2/EstadoDeudaPage';
+import EstadoDeudaPage from '../views/EstadoDeuda/EstadoDeudaPage';
 import Pago from '../views/Pagos/Pago.jsx';
 import ComerciosResponsablesInscriptosPage from '../views/ComerciosResponsablesInscriptos/ComerciosResponsablesInscriptosPage';
 import {getFullUrl, MODO_ANONIMO} from '../core/globals';

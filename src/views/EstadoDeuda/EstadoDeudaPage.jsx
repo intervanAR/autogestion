@@ -1,96 +1,116 @@
-import React from "react";
-import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import NodoDeuda from './NodoDeuda.jsx';
+import Header from "../../components/Header/Header.jsx";
+import {getResumenDeuda, postPagoResumen} from "../../core/deudas/deudas-actions";
+import {setResumenPrevio} from "../../core/pagos/pagos-actions";
+import FiltroEstadoDeudaComponent from "./FiltroEstadoDeudaComponent";
+import * as AuthService from '../../core/auth/auth-actions';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
-
-// @material-ui/core components
-import withStyles from "@material-ui/core/styles/withStyles";
-import Header from "../../components/Header/Header.jsx";
-import BlockComponent from "../../components/Loading/BlockComponent";
 import Card from "../../components/Card/Card.jsx";
 import CardBody from "../../components/Card/CardBody.jsx";
 import CardHeader from "../../components/Card/CardHeader";
+import withStyles from "@material-ui/core/styles/withStyles";
 import extendedFormsStyle from "../../assets/jss/views/extendedFormsStyle.jsx";
 import pagesStyle from "../../assets/jss/layouts/pagesStyle";
-import {
-	tooltip
-} from "../../assets/jss/autogestion";
-import {getDeudas} from "../../core/deudas/deudas-actions";
-import FiltroEstadoDeudaComponent from "./FiltroEstadoDeudaComponent";
-import ListadoEstadoDeudaComponent from "./ListadoEstadoDeudaComponent";
+import BlockComponent from "../../components/Loading/BlockComponent";
+import {browserHistory} from "../../core/globals"
+
 
 const styles = (theme) => ({
 	...pagesStyle(theme),
 	...extendedFormsStyle,
-	...tooltip,
 });
 
 @connect(
 	state => ({
-		deudas: state.deudas,
+		resumenDeudas: state.resumenDeudas,
+    user: state.auth.user,
 	}),
 	dispatch => ({ // mapDispatchToProps
 		actions: bindActionCreators({
-			getDeudas,
+			getResumenDeuda,
+      postPagoResumen,
+			setResumenPrevio,
 		}, dispatch)
 	})
 )
+
 @withStyles(styles)
-export default class EstadoDeudaPage extends React.Component {
-	static propTypes = {
-		classes: PropTypes.any,
-		deudas: PropTypes.object.isRequired,
-		style: PropTypes.any,
-		actions: PropTypes.any.isRequired,
-		headerProps: PropTypes.any.isRequired,
-	};
+export default class EstadoDeudaPage extends Component {
 
-	state = {
-	};
-
-	constructor(props) {
-		super(props);
-		this.onSearch = this.onSearch.bind(this);
+	constructor(props){
+		super(props)
+		this.state = {
+			resumenDeudas:[],
+		}
+	}
+  componentDidMount() {
+    if (AuthService.isLoggedIn()){
+      const usuario = this.props.user.id != undefined ? this.props.user.id : null;
+  		return Promise.all([
+  			this.props.actions.getResumenDeuda({usuario})
+  		]).then(data =>{
+				this.setState({resumenDeudas : data[0]})
+			})
+    }
 	}
 
-	componentDidMount() {
-		return Promise.all([
-			this.props.actions.getDeudas({})
+
+  onSearch = (tipoImponible, nroImponible) =>{
+    const usuario = this.props.user != undefined ? this.props.user.id : null;
+		return this.props.actions.getResumenDeuda({tipoImponible, nroImponible, usuario });
+	}
+
+  handlePagarDeudas = (deudas) => {
+		Promise.all([
+			this.props.actions.setResumenPrevio(deudas),
 		])
-	}
+		browserHistory.push('/estado-deuda-pago');
+  }
 
-	onSearch(tipoImponible, nroImponible) {
-		return this.props.actions.getDeudas({tipoImponible, nroImponible});
-	}
-
-	render() {
-		const {classes, headerProps, deudas: {data: dataDeudas, loadingDeudas}} = this.props;
-		const loading = loadingDeudas;
-		return (
-			<div>
-				<Header
+  render (){resumenDeudas
+    const {classes, headerProps} = this.props;
+		const resumenDeudas = this.state.resumenDeudas;
+    const loading = resumenDeudas.loadingResumenDeudas; //Ver ....
+//Ver ....
+    return (
+      <div>
+        <Header
 					{...headerProps}
 					showTitle={true}
 				>
 					<div></div>
 				</Header>
-				<BlockComponent blocking={loading}>
-					<div className={classes.wrapper}>
-						<Card className={classes.card}>
-							<CardHeader>
-								<FiltroEstadoDeudaComponent
-									onSearch={this.onSearch}
-								/>
-							</CardHeader>
-							<CardBody>
-								<ListadoEstadoDeudaComponent
-									data={dataDeudas}
-								/>
-							</CardBody>
-						</Card>
-					</div>
-				</BlockComponent>
-			</div>
-		);
-	}
+        <BlockComponent blocking={loading}>
+          <div className={classes.wrapper}>
+            {
+              ! AuthService.isLoggedIn() &&
+                <div>
+                  <Card className={classes.card}>
+                    <CardHeader>
+                      <FiltroEstadoDeudaComponent
+                        onSearch={this.onSearch}
+                      />
+                    </CardHeader>
+                    <CardBody>
+
+                    </CardBody>
+                  </Card>
+                </div>
+            }
+            {
+              resumenDeudas.map((deuda, key)=>{
+                return (<NodoDeuda
+                  key={key}
+                  datos={deuda}
+                  handleOnClickPagar={this.handlePagarDeudas}
+                />)
+              })
+            }
+          </div>
+        </BlockComponent>
+      </div>
+    )
+  }
 }

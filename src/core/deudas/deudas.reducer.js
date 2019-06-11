@@ -20,12 +20,16 @@ const initialState = {
     resumenDeudasError: false,
 };
 
+/*
+...handleApiAction(actionTypes.getResumenDeuda, {loadingField: 'loadingResumenDeudas', errorField: 'resumenDeudasError'},
+    (state, {payload: {data = []}}) => {
+        return {
+            ...state,
+            data
+        };
+    }),
+*/
+
 export default handleActions({
-    ...handleApiAction(actionTypes.getResumenDeuda, {loadingField: 'loadingResumenDeudas', errorField: 'resumenDeudasError'},
-        (state, {payload: {data = []}}) => {
-            return {
-                ...state,
-                data
-            };
-        }),
+
 }, initialState);

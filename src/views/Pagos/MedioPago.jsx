@@ -2,20 +2,10 @@ import React, {Component} from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import Card from "../../components/Card/Card.jsx";
-import CardContent from '@material-ui/core/CardContent';
-import CardHeader from "../../components/Card/CardHeader.jsx";
-import CardIcon from "../../components/Card/CardIcon.jsx";
 import CardBody from "../../components/Card/CardBody.jsx";
-import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import GridContainer from "../../components/Grid/GridContainer.jsx";
-import GridItem from "../../components/Grid/GridItem.jsx";
-
 import Tooltip from '@material-ui/core/Tooltip';
-import Fade from '@material-ui/core/Fade';
 import Zoom from '@material-ui/core/Zoom';
-import Button from '@material-ui/core/Button';
-import Popover from '@material-ui/core/Popover';
 
 const styles = theme => ({
 
@@ -65,7 +55,7 @@ class MedioPago extends Component {
   render (){
 
     const { item, selected, classes, icono } = this.props;
-    const iconPath = "../../assets/img/"+icono+".png";
+    const iconPath = "../../assets/img/"+icono;
 
     return (
 
@@ -74,7 +64,7 @@ class MedioPago extends Component {
           alignItems="center"
           justify="center"
           >
-            <Tooltip TransitionComponent={Zoom} TransitionProps={{ timeout: 600 }} title={item.marca}>
+            <Tooltip TransitionComponent={Zoom} TransitionProps={{ timeout: 600 }} title={item.desc_medio_pago}>
               <Card
                 onMouseEnter={this.hoverOn}
                 onMouseLeave={this.hoverOff}
@@ -88,7 +78,6 @@ class MedioPago extends Component {
             </Tooltip>
 
         </Grid>
-
     )
   }
 }
@@ -97,7 +86,7 @@ MedioPago.propTypes = {
   handleClick: PropTypes.func,
   classes: PropTypes.any,
   selected: PropTypes.bool,
-  icono : PropTypes.oneOf(['visa','mastercard','rapipago','banelco','link']),
+  icono : PropTypes.string,
   item: PropTypes.shape({
     id: PropTypes.number,
     text: PropTypes.string,

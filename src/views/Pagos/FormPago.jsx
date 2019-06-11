@@ -57,14 +57,14 @@ class FormPago extends Component {
       messageColor:null,
       token:null,
       isLoading: false,
-        card_number : "4507990000004905",
-        card_holder_name:"John Doe",
-        card_expiration_month : "08",
-        card_expiration_year : "20",
-        security_code : "123",
-        card_holder_identification_type : "dni",
-        card_holder_identification_number : "25123456",
-        importe:0,
+      card_number : null,
+      card_holder_name:null,
+      card_expiration_month : null,
+      card_expiration_year : null,
+      security_code :null,
+      card_holder_identification_type :null,
+      card_holder_identification_number : null,
+      importe:0,
     };
     this.reset = this.reset.bind(this);
   }
@@ -74,13 +74,13 @@ class FormPago extends Component {
       messageColor:null,
       token:null,
       isLoading: false,
-      card_number : "4507990000004905",
-      card_holder_name:"John Doe",
-      card_expiration_month : "08",
-      card_expiration_year : "20",
-      security_code : "123",
-      card_holder_identification_type : "dni",
-      card_holder_identification_number : "25123456",
+      card_number : null,
+      card_holder_name:null,
+      card_expiration_month : null,
+      card_expiration_year : null,
+      security_code :null,
+      card_holder_identification_type :null,
+      card_holder_identification_number : null,
       importe:0,
     }
     this.setState(state);
@@ -112,7 +112,7 @@ class FormPago extends Component {
 		return {
 			onChange: this.handleOnChangeValue.bind(this)(key),
 			value: this.state[key] || '',
-			validate: this.validarItem.bind(this)(key),
+			validate: "'"+this.validarItem.bind(this)(key)+"'",
 		};
 	};
 
@@ -160,8 +160,8 @@ class FormPago extends Component {
     if (state.card_number == null){
       return false;
     }
-    if (state.card_number.toString().length <  medioPago.longitud_pan ||
-        state.card_number.toString().length >  medioPago.longitud_pan){
+    if (state.card_number.toString().length <  medioPago.parametros.longitud_pan ||
+        state.card_number.toString().length >  medioPago.parametros.longitud_pan){
       return false;
     }
     return true;
@@ -191,7 +191,7 @@ class FormPago extends Component {
     const medioPago = this.props.medioPago;
 
     if (state.security_code == null ||
-        state.security_code.length != medioPago.formato_cvv.length ){
+        state.security_code.length != medioPago.parametros.formato_cvv.length ){
       return false;
     }
     return true;
@@ -259,7 +259,6 @@ class FormPago extends Component {
         },
       }),
     }
-
     fetch("https://developers.decidir.com/api/v1/tokens", params)
       .then(res => res.json())
       .then(
@@ -273,9 +272,6 @@ class FormPago extends Component {
             this.props.handleOnClickPagar(result);
           }
         },
-        // Note: it's important to handle errors here
-        // instead of a catch() block so that we don't swallow
-        // exceptions from actual bugs in components.
         (error) => {
           this.setState({
             isLoading: false,
@@ -371,8 +367,8 @@ class FormPago extends Component {
                         ...this.bindValue('card_number'),
                       }}
                       inputHtmlProps={{
-                        minlength:medioPago.longitud_pan,
-                        maxlength:medioPago.longitud_pan,
+                        minLength:medioPago.parametros.longitud_pan,
+                        maxLength:medioPago.parametros.longitud_pan,
                       }}
                     />
                   </GridItem>
@@ -394,8 +390,8 @@ class FormPago extends Component {
                         ...this.bindValue('card_expiration_month'),
                       }}
                       inputHtmlProps={{
-                        minlength:2,
-                        maxlength:2,
+                        minLength:2,
+                        maxLength:2,
                       }}
                     />
                   </GridItem>
@@ -414,8 +410,8 @@ class FormPago extends Component {
                         ...this.bindValue('card_expiration_year'),
                       }}
                       inputHtmlProps={{
-                        minlength:2,
-                        maxlength:2,
+                        minLength:2,
+                        maxLength:2,
                       }}
                     />
                   </GridItem>
@@ -449,8 +445,8 @@ class FormPago extends Component {
                         ...this.bindValue('security_code'),
                       }}
                       inputHtmlProps={{
-                        minlength:medioPago.formato_cvv.length,
-                        maxlength:medioPago.formato_cvv.length,
+                        minLength:medioPago.parametros.formato_cvv.length,
+                        maxLength:medioPago.parametros.formato_cvv.length,
                       }}
                     />
                   </GridItem>
@@ -463,7 +459,7 @@ class FormPago extends Component {
                         variant="contained"
                         color="transparent"
                         fullWidth={true}
-                        size="large"
+                        size="lg"
                         onClick={this.handleVolver}>
                         VOLVER
                       </Button>
@@ -476,7 +472,7 @@ class FormPago extends Component {
                         variant="contained"
                         color="success"
                         fullWidth={true}
-                        size="large"
+                        size="lg"
                         onClick={this.handleOnClickAceptar}>
                         PAGAR
                       </Button>

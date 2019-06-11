@@ -6,7 +6,7 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const nodeEnv = process.env.NODE_ENV || 'development';
 const isProduction = nodeEnv === 'production';
 
-const API_URL = process.env.API_URL || 'http://10.1.1.202/api_rentas/rest';
+const API_URL = process.env.API_URL || 'http://10.1.1.201/api_rentas/rest';
 const ENV_NAME = process.env.ENV_NAME || 'local';
 const BASE_URL = process.env.BASE_URL || '/autogestion/';
 const PUBLIC_PATH = process.env.PUBLIC_PATH || '/autogestion/';
