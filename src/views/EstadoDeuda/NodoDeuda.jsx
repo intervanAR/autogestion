@@ -35,10 +35,6 @@ export default class NodoDeuda extends React.Component {
 		this.handleSeleccion(this.props.datos)
 	}
 
-  handleOnClickPagar = ()=>{
-    console.log("Pagar ", this.state);
-  }
-
   retornarDeuda(nodo, deudas){
     if (nodo.tipo.detalle != undefined && nodo.tipo.detalle == 'det' ){
       nodo.detalle.map(det =>deudas.push(det));
@@ -57,10 +53,19 @@ export default class NodoDeuda extends React.Component {
     return total;
   }
 
+	push = (camino, nodo)=>{
+		camino.push(nodo);
+		if (nodo.detalle.length == 1 && nodo.tipo.detalle == 'res'){
+			camino = this.push(camino, nodo.detalle[0]);
+		}
+		return camino;
+	}
+
   handleSeleccion = (nodoSelected) => {
     const state = this.state;
-    state.camino.push(nodoSelected);
-    state.deuda = this.retornarDeuda(nodoSelected, []);
+    var camino = state.camino
+		state.camino = this.push(camino, nodoSelected);
+		state.deuda = this.retornarDeuda(state.camino[state.camino.length-1], []);
     state.importeDeuda = this.sumarImportesDeudas(state.deuda);
     this.setState({
       ...state
@@ -96,16 +101,12 @@ export default class NodoDeuda extends React.Component {
 
 	handleOnClickPagar = () =>{
 		this.props.handleOnClickPagar(this.state.deuda);
-
-
 	}
 
   render() {
 		const {classes, datos } = this.props;
 		return (
 			<div>
-
-
             <Card className={classes.card}>
               <CardHeader>
                 {
@@ -126,7 +127,6 @@ export default class NodoDeuda extends React.Component {
                     handleSeleccion={this.handleSeleccion}
                     handleOnClickPagar={this.handleOnClickPagar}
                     handleCheckBox={this.handleCheckBox}
-										handleOnClickPagar={this.handleOnClickPagar}
                   />
                 </div>
               </CardBody>
