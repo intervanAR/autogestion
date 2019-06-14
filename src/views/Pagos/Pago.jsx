@@ -24,7 +24,6 @@ import moment from "moment";
 import MedioPago from './MedioPago';
 
 import ComprobantePago from './ComprobantePago.jsx';
-import resultPago from './result_pago.js';
 
 const styles = theme => ({
   root: {
