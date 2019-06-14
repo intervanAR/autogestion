@@ -7,8 +7,9 @@ import {bindActionCreators} from 'redux';
 import FormPago from './FormPago';
 //Actions connect
 import { postResumenPago , postPagar, getMediosPago, getGatewayPago } from '../../core/pagos/pagos-actions.js';
-
 //Utils
+import {downloadFile} from "../../core/downloadService";
+import Typography from '@material-ui/core/Typography';
 import MessageComponent from '../../components/Message/MessageComponent';
 import Step from '@material-ui/core/Step';
 import Button from '../../components/CustomButtons/Button';
@@ -21,6 +22,9 @@ import BlockComponent from "../../components/Loading/BlockComponent";
 import Select from "@material-ui/core/Select";
 import moment from "moment";
 import MedioPago from './MedioPago';
+
+import ComprobantePago from './ComprobantePago.jsx';
+import resultPago from './result_pago.js';
 
 const styles = theme => ({
   root: {
@@ -42,6 +46,20 @@ const styles = theme => ({
     marginTop:'20px',
     fontSize: '18px',
   },
+  detContent : {
+    padding:20,
+  },
+  headContent : {
+    paddingBottom:20,
+  },
+  mainComp:{
+    border: '1px solid #aeaeae',
+    borderRadius: '3px',
+    padding: '5px',
+  },
+  head : {
+    borderBottom:'1px solid #aeaeae',
+  }
 
 });
 
@@ -79,6 +97,17 @@ export default class Pago extends Component {
       fecha_actualizacion:  moment(new Date(), 'DD/MM/YYYY').format('YYYY-MM-DD'),
       id_operacion:null,
       pago:null,
+      pagar:{
+        resultado: "",
+        mensajes: [],
+        fecha: "",
+        nro_operacion: "",
+        monto: "",
+        medio_pago: "",
+        estado: "",
+        detalle: [],
+        ticket:"",
+      },
     })
     this.nextStep = this.nextStep.bind(this);
   }
@@ -88,7 +117,6 @@ export default class Pago extends Component {
 			this.props.actions.getMediosPago({}),
 		])
 	}
-
 
   setErrorMessage(message) {
 		this.setMessage({messageColor: 'danger', message});
@@ -112,7 +140,6 @@ export default class Pago extends Component {
     this.nextStep(null);
   };
   handleBack = () => {
-    console.log("handleBack");
     this.setState(state => ({
       activeStep: state.activeStep - 1,
     }));
@@ -126,7 +153,6 @@ export default class Pago extends Component {
 
   }
   handleOnClickMedioPago = (item) => {
-    console.log(item);
     this.setState({
       ...this.state,
       selectedMedioPago:item
@@ -145,8 +171,6 @@ export default class Pago extends Component {
       this.props.actions.getGatewayPago({codGateway}),
       this.props.actions.postResumenPago(params),
     ]).then(data =>{
-      console.log("GATEWAY : ", data[0]);
-      console.log("OPERACION :", data[1]);
       if (data[1].id_operacion != undefined){
         this.setState({...this.state,
                         id_operacion:data[1].id_operacion,
@@ -164,19 +188,16 @@ export default class Pago extends Component {
       medio_pago: this.state.selectedMedioPago.cod_medio_pago,
       token: token,
     }
-    //Pasamos a la etapa de procesamiento del pago.
-    this.setState({
-      activeStep: 2,
-    });
 
     Promise.all([
       this.props.actions.postPagar(data),
     ]).then(data =>{
-      this.state.pago = data[0];
-    });
-    /*.catch(error => {
+      this.setState({
+        activeStep: 2,
+        pagar:data[0]});
+    }).catch(error => {
       this.setErrorMessage(error.message);
-    });*/
+    });
   }
 
   habilitarButtonConinuar = ()=>{
@@ -184,11 +205,15 @@ export default class Pago extends Component {
         || this.state.selectedMedioPago != null ? false : true;
   }
 
+  handleDescargar = () => {
+    this.state.pagar.ticket != undefined && downloadFile(this.state.pagar.ticket, "comprobante.pdf")
+	}
+
   getMediosPagoContent(){
     const {mediosPago} = this.props.pagos;
     const classes = this.props.classes;
-    const alignItems="flex-start"; //flex-start
-    const justify = "flex-start"; //flex-start
+    const alignItems="flex-start";
+    const justify = "flex-start";
     const spacing=8;
     return(
     <React.Fragment>
@@ -317,7 +342,6 @@ export default class Pago extends Component {
   }
 
   getStepContent(stepIndex) {
-    console.log("PROPS: ",this.props);
     const {pagos, headerProps, classes} = this.props;
     switch (stepIndex) {
       case 0:
@@ -326,44 +350,50 @@ export default class Pago extends Component {
       case 1:
         return (
           <React.Fragment>
-            <FormPago
-              medioPago = {this.state.selectedMedioPago}
-              importe={this.state.importe}
-              handleOnClickVolver={this.handleBack}
-              handleOnClickPagar={this.handlePagar}
-            />
+            <Grid container justify="center">
+              <Grid item xs={12} sm={12}>
+                <FormPago
+                  medioPago = {this.state.selectedMedioPago}
+                  importe={this.state.importe}
+                  handleOnClickVolver={this.handleBack}
+                  handleOnClickPagar={this.handlePagar}
+                />
+              </Grid>
+            </Grid>
           </React.Fragment>
         )
         break;
       case 2:
         return (
-          <React.Fragment>
-              <Grid
-                direction="row"
-                wrap="wrap"
-                alignItems="center"
+            this.state.pagar.resultado != 'OK'
+            ? <div>
+                <i style={{color:'#ff4740',fontSize: '4.6em'}} class="material-icons">
+                  error_outline
+                </i>
+                <Typography gutterBottom variant="headline">Se produjo un error en el pago.</Typography>
+                {
+                  this.state.pagar.mensajes.map(m => <Typography gutterBottom variant="headline">{m}</Typography>)
+                }
+              </div>
+            : (
+                <div>
+                  <ComprobantePago
+                      titulo="Municipalidad de Prueba"
+                      fecha={moment(new Date(this.state.pagar.fecha), 'YYYY-MM-DD HH:MM:SS').format('DD/MM/YYYY')}
+                      hora={moment(new Date(this.state.pagar.fecha), 'YYYY-MM-DD HH:MM:SS').format('HH:MM:SS')}
+                      transaccion={this.state.pagar.nro_operacion}
+                      usuario={this.props.user.nombre}
+                      importe={this.state.pagar.monto}
+                      medioPago={this.state.pagar.medio_pago}
+                      estado={this.state.pagar.estado}
+                  />
+                  <div>
+                    <Button onClick={this.handleDescargar} color="transparent">Click para descargar</Button>
+                  </div>
 
-                >
-                <GridItem>
-                  {
-                    this.props.pagos.PagosError
-                    ? <span>Se produjo un error en el Pago</span>
-                    : ''
-                  }
-
-                  {
-                    this.props.pagos.data.resultado != undefined && this.props.pagos.data.resultado == 'OK'
-                    ? (
-                      <div>
-                        <span>El Pago fue realizado.</span>
-                        <Button color="info">DESCARGAR</Button>
-                      </div>
-                    ):''
-                  }
-                </GridItem>
-              </Grid>
-          </React.Fragment>
-        )
+                </div>
+              )
+          )
         break;
       default:
         return <div></div>
@@ -392,8 +422,7 @@ export default class Pago extends Component {
               <CardBody>
                 <div className={classes.root}>
                   <Grid
-                    direction="row"
-                    wrap="wrap"
+                    
                     alignItems="center"
                     >
                     <GridItem>
@@ -409,7 +438,6 @@ export default class Pago extends Component {
             </Card>
           </div>
         </BlockComponent>
-
 
         <MessageComponent
           color={messageColor}

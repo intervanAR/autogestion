@@ -53,6 +53,9 @@ export default class NodoDeuda extends React.Component {
     return total;
   }
 
+	/* Al seleccionar un nodo que tiene un unico camino hacia su hoja,
+		 Lo reccore agregando los nodos intermedios al camino.
+	 */
 	push = (camino, nodo)=>{
 		camino.push(nodo);
 		if (nodo.detalle.length == 1 && nodo.tipo.detalle == 'res'){
