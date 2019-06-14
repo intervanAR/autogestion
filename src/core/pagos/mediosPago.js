@@ -8,5 +8,6 @@ export const flattenMediosPago = (mediosPago) => mediosPago.map(medioPago => {
     parametros: JSON.parse(medioPago.parametros),
     reporte: medioPago.reporte,
     tipo: medioPago.tipo,
+    habilitado: medioPago.habilitado == 'S' ? true : false
   }
 });

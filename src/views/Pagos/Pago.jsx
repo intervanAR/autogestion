@@ -8,6 +8,7 @@ import FormPago from './FormPago';
 //Actions connect
 import { postResumenPago , postPagar, getMediosPago, getGatewayPago } from '../../core/pagos/pagos-actions.js';
 //Utils
+import { formatNumber } from '../../core/helpers.js';
 import {downloadFile} from "../../core/downloadService";
 import Typography from '@material-ui/core/Typography';
 import MessageComponent from '../../components/Message/MessageComponent';
@@ -18,6 +19,7 @@ import GridItem from "../../components/Grid/GridItem.jsx";
 import Card from "../../components/Card/Card.jsx";
 import CardHeader from "../../components/Card/CardHeader.jsx";
 import CardBody from "../../components/Card/CardBody.jsx";
+import DialogMessage from "../../components/DialogMessage/DialogMessage.jsx";
 import BlockComponent from "../../components/Loading/BlockComponent";
 import Select from "@material-ui/core/Select";
 import moment from "moment";
@@ -96,6 +98,12 @@ export default class Pago extends Component {
       fecha_actualizacion:  moment(new Date(), 'DD/MM/YYYY').format('YYYY-MM-DD'),
       id_operacion:null,
       pago:null,
+      dialogMessage:{
+        open:false,
+        title:'',
+        description:'',
+        color:'red',
+      },
       pagar:{
         resultado: "",
         mensajes: [],
@@ -170,10 +178,11 @@ export default class Pago extends Component {
       this.props.actions.getGatewayPago({codGateway}),
       this.props.actions.postResumenPago(params),
     ]).then(data =>{
+      console.log("mierda deuda: ",data[1]);
       if (data[1].id_operacion != undefined){
         this.setState({...this.state,
                         id_operacion:data[1].id_operacion,
-                        importe:data[1].importe});
+                        importe:data[1].total});
         this.nextStep(e);
       }
     }).catch(error => {
@@ -194,8 +203,21 @@ export default class Pago extends Component {
       this.setState({
         activeStep: 2,
         pagar:data[0]});
-    }).catch(error => {
-      this.setErrorMessage(error.message);
+    }).catch(data => {
+      let descripcion = '';
+      for (const m in data.mensajes){
+        descripcion += `${descripcion} ${m}`;
+      }
+      const dialogMessage = {
+        open:true,
+        title:'Error en el pago',
+        description:descripcion,
+        color:'#ff4740',
+      }
+      this.setState({
+        dialogMessage
+      });
+
     });
   }
 
@@ -216,7 +238,7 @@ export default class Pago extends Component {
     const spacing=8;
     return(
     <React.Fragment>
-      <Grid container xs={12} >
+      <Grid container >
         <Grid item xs={12} sm={9} >
           <Grid
             container
@@ -353,7 +375,7 @@ export default class Pago extends Component {
               <Grid item xs={12} sm={12}>
                 <FormPago
                   medioPago = {this.state.selectedMedioPago}
-                  importe={this.state.importe}
+                  importe={formatNumber(this.state.importe)}
                   handleOnClickVolver={this.handleBack}
                   handleOnClickPagar={this.handlePagar}
                 />
@@ -379,7 +401,7 @@ export default class Pago extends Component {
                   <ComprobantePago
                       titulo="Municipalidad de Prueba"
                       fecha={moment(new Date(this.state.pagar.fecha), 'YYYY-MM-DD HH:MM:SS').format('DD/MM/YYYY')}
-                      hora={moment(new Date(this.state.pagar.fecha), 'YYYY-MM-DD HH:MM:SS').format('HH:MM:SS')}
+                      hora={this.state.pagar.fecha.substr(11,18)}
                       transaccion={this.state.id_operacion}
                       usuario={this.props.user.nombre}
                       importe={this.state.pagar.monto}
@@ -399,6 +421,16 @@ export default class Pago extends Component {
     }
   }
 
+  handleCloseDialog = () => {
+    const dialogMessage = {
+      open:false,
+      title:'',
+      descripcion:'',
+      color:''
+    }
+    this.setState({dialogMessage});
+  }
+
   render (){
     const { activeStep, message, messageColor } = this.state;
     const {pagos, headerProps, classes} = this.props;
@@ -412,6 +444,12 @@ export default class Pago extends Component {
         >
           <div></div>
         </Header>
+
+        <DialogMessage
+          handleClose={this.handleCloseDialog}
+          {...this.state.dialogMessage}
+        />
+
         <BlockComponent blocking={loading}>
           <div className={classes.wrapper}>
             <Card className={classes.card}>

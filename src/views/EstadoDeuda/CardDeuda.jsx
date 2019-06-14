@@ -67,7 +67,7 @@ const styles = {
   },
   pos: {
   },
-  
+
   danger : {
     color: '#ff2d00',
     fontSize: '20px',
@@ -98,7 +98,7 @@ class CardDeuda extends Component {
   HomeIcon(props) {
     return (
       <div style={{paddingRight:'10px'}}>
-        <SvgIcon {...props}>
+        <SvgIcon>
           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
         </SvgIcon>
       </div>
@@ -107,7 +107,7 @@ class CardDeuda extends Component {
   DetailIcon(props) {
     return (
       <div style={{paddingRight:'10px'}}>
-        <SvgIcon {...props}>
+        <SvgIcon >
           <path fill="#000000" d="M5,3C3.89,3 3,3.89 3,5V19C3,20.11 3.89,21 5,21H19C20.11,21 21,20.11 21,19V5C21,3.89 20.11,3 19,3H5M5,5H19V19H5V5M7,7V9H17V7H7M7,11V13H17V11H7M7,15V17H14V15H7Z" />
         </SvgIcon>
       </div>
@@ -167,7 +167,6 @@ class CardDeuda extends Component {
             <GridItem item xs={12} sm={3} >
                 <Button
                   fullWidth={true}
-                  size="large"
                   color="success"
                   onClick={handleOnClickPagar}
                 >Pagar</Button>

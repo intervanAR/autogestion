@@ -18,7 +18,7 @@ import BlockComponent from "../../components/Loading/BlockComponent";
 import { withStyles } from '@material-ui/core/styles';
 import { makeStyles } from '@material-ui/core/styles';
 import MenuItem from '@material-ui/core/MenuItem';
-
+import { formatNumber } from '../../core/helpers.js';
 const styles = theme => ({
 
   root: {
@@ -64,7 +64,6 @@ class FormPago extends Component {
       security_code :null,
       card_holder_identification_type :null,
       card_holder_identification_number : null,
-      importe:0,
     };
     this.reset = this.reset.bind(this);
   }
@@ -81,7 +80,6 @@ class FormPago extends Component {
       security_code :null,
       card_holder_identification_type :null,
       card_holder_identification_number : null,
-      importe:0,
     }
     this.setState(state);
   }
@@ -428,7 +426,7 @@ class FormPago extends Component {
                         required: true,
                         disabled:true,
                         type: "text",
-                        ...this.bindValue('importe'),
+                        value: formatNumber(this.props.importe),
                       }}
                     />
                   </GridItem>

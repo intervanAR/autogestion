@@ -13,7 +13,13 @@ const styles = theme => ({
     fontWeight: 'bold',
     color: '#252629',
     fontSize: '16px',
-    opacity:'0.8',
+    opacity: '0.8',
+  },
+  disabled:{
+    fontWeight: 'bold',
+    color: '#252629',
+    fontSize: '16px',
+    opacity: '0.4',
   },
   itemHover:{
     border:'1px solid #c7c8cf',
@@ -42,14 +48,14 @@ class MedioPago extends Component {
   }
 
   handleClick(item){
-    return this.props.handleClick(item);
+    return this.props.item.habilitado ? this.props.handleClick(item) : false
   }
 
   hoverOn = ()=>{
-    this.setState({ hover: true });
+    return this.props.item.habilitado ? this.setState({ hover: true }) : false
   }
   hoverOff = ()=>{
-    this.setState({ hover: false });
+    return this.props.item.habilitado ? this.setState({ hover: false }) : false
   }
 
   render (){
@@ -69,10 +75,10 @@ class MedioPago extends Component {
                 onMouseEnter={this.hoverOn}
                 onMouseLeave={this.hoverOff}
                 className={
-                  selected ? classes.selectedItem : this.state.hover ? classes.itemHover : classes.item
+                  selected ? classes.selectedItem : this.state.hover ? classes.itemHover : item.habilitado ? classes.item : classes.disabled
                 }>
                 <CardBody>
-                  <img src={iconPath} alt="Smiley face"  />
+                    <img src={iconPath} alt="Smiley face"  />
                 </CardBody>
               </Card>
             </Tooltip>
