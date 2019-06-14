@@ -381,7 +381,7 @@ export default class Pago extends Component {
                       titulo="Municipalidad de Prueba"
                       fecha={moment(new Date(this.state.pagar.fecha), 'YYYY-MM-DD HH:MM:SS').format('DD/MM/YYYY')}
                       hora={moment(new Date(this.state.pagar.fecha), 'YYYY-MM-DD HH:MM:SS').format('HH:MM:SS')}
-                      transaccion={this.state.pagar.nro_operacion}
+                      transaccion={this.state.id_operacion}
                       usuario={this.props.user.nombre}
                       importe={this.state.pagar.monto}
                       medioPago={this.state.pagar.medio_pago}
@@ -422,7 +422,7 @@ export default class Pago extends Component {
               <CardBody>
                 <div className={classes.root}>
                   <Grid
-                    
+
                     alignItems="center"
                     >
                     <GridItem>
