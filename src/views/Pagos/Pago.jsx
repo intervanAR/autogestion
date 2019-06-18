@@ -178,7 +178,7 @@ export default class Pago extends Component {
       this.props.actions.getGatewayPago({codGateway}),
       this.props.actions.postResumenPago(params),
     ]).then(data =>{
-      console.log("mierda deuda: ",data[1]);
+      console.log("deuda: ", data[1]);
       if (data[1].id_operacion != undefined){
         this.setState({...this.state,
                         id_operacion:data[1].id_operacion,
@@ -204,20 +204,10 @@ export default class Pago extends Component {
         activeStep: 2,
         pagar:data[0]});
     }).catch(data => {
-      let descripcion = '';
-      for (const m in data.mensajes){
-        descripcion += `${descripcion} ${m}`;
-      }
-      const dialogMessage = {
-        open:true,
-        title:'Error en el pago',
-        description:descripcion,
-        color:'#ff4740',
-      }
       this.setState({
-        dialogMessage
+        activeStep: 2,
+        pagar:data
       });
-
     });
   }
 
@@ -386,6 +376,7 @@ export default class Pago extends Component {
         break;
       case 2:
         return (
+
             this.state.pagar.resultado != 'OK'
             ? <div>
                 <i style={{color:'#ff4740',fontSize: '4.6em'}} class="material-icons">
@@ -393,8 +384,9 @@ export default class Pago extends Component {
                 </i>
                 <Typography gutterBottom variant="headline">Se produjo un error en el pago.</Typography>
                 {
-                  this.state.pagar.mensajes.map(m => <Typography gutterBottom variant="headline">{m}</Typography>)
+                  Object.keys(this.state.pagar.mensajes).map(k => <Typography gutterBottom variant="headline">{this.state.pagar.mensajes[k]}</Typography>)
                 }
+                <Button onClick={this.handleReset}>VOLVER</Button>
               </div>
             : (
                 <div>
@@ -409,7 +401,7 @@ export default class Pago extends Component {
                       estado={this.state.pagar.estado}
                   />
                   <div>
-                    <Button onClick={this.handleDescargar} color="transparent">Click para descargar</Button>
+                    <Button color="primary" onClick={this.handleDescargar} color="transparent">Click para descargar</Button>
                   </div>
 
                 </div>
