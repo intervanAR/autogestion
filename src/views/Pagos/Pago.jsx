@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import FormPago from './FormPago';
+import FormPagoBanelco from './FormPagoBanelco';
 //Actions connect
 import { postResumenPago , postPagar, getMediosPago, getGatewayPago } from '../../core/pagos/pagos-actions.js';
 //Utils
@@ -19,11 +20,11 @@ import GridItem from "../../components/Grid/GridItem.jsx";
 import Card from "../../components/Card/Card.jsx";
 import CardHeader from "../../components/Card/CardHeader.jsx";
 import CardBody from "../../components/Card/CardBody.jsx";
-import DialogMessage from "../../components/DialogMessage/DialogMessage.jsx";
 import BlockComponent from "../../components/Loading/BlockComponent";
 import Select from "@material-ui/core/Select";
 import moment from "moment";
 import MedioPago from './MedioPago';
+
 
 import ComprobantePago from './ComprobantePago.jsx';
 
@@ -98,12 +99,6 @@ export default class Pago extends Component {
       fecha_actualizacion:  moment(new Date(), 'DD/MM/YYYY').format('YYYY-MM-DD'),
       id_operacion:null,
       pago:null,
-      dialogMessage:{
-        open:false,
-        title:'',
-        description:'',
-        color:'red',
-      },
       pagar:{
         resultado: "",
         mensajes: [],
@@ -116,7 +111,6 @@ export default class Pago extends Component {
         ticket:"",
       },
     })
-    this.nextStep = this.nextStep.bind(this);
   }
 
   componentDidMount() {
@@ -136,20 +130,8 @@ export default class Pago extends Component {
 		this.setState({message: null, messageColor: null});
 	};
 
-  nextStep(e){
-    this.setState({
-      ...this.state,
-      activeStep : this.state.activeStep + 1,
-    });
-  }
-
-  handleNext = () => {
-    this.nextStep(null);
-  };
   handleBack = () => {
-    this.setState(state => ({
-      activeStep: state.activeStep - 1,
-    }));
+    this.handleReset();
   };
   handleReset = () => {
     this.setState({
@@ -165,9 +147,10 @@ export default class Pago extends Component {
       selectedMedioPago:item
     });
   }
-  handleNextMedioPago = (e) => {
+
+  pagarPorDecidirTarjeta = (medioPago) =>{
     const state = this.state;
-    const codGateway = this.state.selectedMedioPago.cod_gateway;
+    const codGateway = medioPago.cod_gateway;
     const params = Object.assign({
       usuario:  this.props.user != undefined ? this.props.user.id : null,
       fecha_actualizacion: state.fecha_actualizacion,
@@ -178,36 +161,137 @@ export default class Pago extends Component {
       this.props.actions.getGatewayPago({codGateway}),
       this.props.actions.postResumenPago(params),
     ]).then(data =>{
-      console.log("deuda: ", data[1]);
       if (data[1].id_operacion != undefined){
-        this.setState({...this.state,
-                        id_operacion:data[1].id_operacion,
-                        importe:data[1].total});
-        this.nextStep(e);
+        this.setState({ id_operacion:data[1].id_operacion,
+                        importe:data[1].total,
+                        activeStep:1,
+                      });
       }
     }).catch(error => {
       this.setErrorMessage(error.message);
     });
   }
 
-  handlePagar = (token) => {
-    const data = {
-      id_operacion: this.state.id_operacion,
-      medio_pago: this.state.selectedMedioPago.cod_medio_pago,
-      token: token,
-    }
+  pagarPorDecidirBanelco = (medioPago)=>{
+    console.log("PAGARPORDECIDIRBANELCO");
+    const state = this.state;
+    const codGateway = medioPago.cod_gateway;
+    const params = Object.assign({
+      usuario:  this.props.user != undefined ? this.props.user.id : null,
+      fecha_actualizacion: state.fecha_actualizacion,
+      deudas:this.props.pagos.resumenPrevio.map(deuda =>{return {id:deuda.id}}),
+    });
 
     Promise.all([
-      this.props.actions.postPagar(data),
+      this.props.actions.getGatewayPago({codGateway}),
+      this.props.actions.postResumenPago(params),
     ]).then(data =>{
+      console.log("DATA RESPONSE ",data);
+      if (data[1].id_operacion != undefined){
+        this.setState({ id_operacion:data[1].id_operacion,
+                        importe:data[1].total,
+                        activeStep: 3 ,
+                      });
+
+      }
+    }).catch(error => {
+      this.setErrorMessage(error.message);
+    });
+  }
+
+  pagarPorRedLink = (medioPago)=>{
+
+  }
+
+  pagarPorNoForm = (medioPago)=>{
+    const state = this.state;
+    const codGateway = medioPago.cod_gateway;
+    const params = Object.assign({
+      usuario:  this.props.user != undefined ? this.props.user.id : null,
+      fecha_actualizacion: state.fecha_actualizacion,
+      deudas:this.props.pagos.resumenPrevio.map(deuda =>{return {id:deuda.id}}),
+    });
+
+    return Promise.all([
+      this.props.actions.getGatewayPago({codGateway}),
+      this.props.actions.postResumenPago(params),
+    ]).then(data =>{
+      if (data[1].id_operacion != undefined){
+        this.handlePagarPorNoForm(data[1].id_operacion, this.state.selectedMedioPago.cod_medio_pago);
+      }
+    }).catch(error => {
+      this.setErrorMessage(error.message);
+    });
+  }
+
+  handleNextMedioPago = (e) => {
+    console.log(this.state.selectedMedioPago);
+    const medioPago = this.state.selectedMedioPago;
+    switch (medioPago.formulario) {
+      case 'decidir_tarjeta':
+        this.pagarPorDecidirTarjeta(medioPago);
+        break;
+      case 'decidir_banelco':
+        this.pagarPorDecidirBanelco(medioPago);
+        break;
+      case 'red_link':
+        this.pagarPorRedLink(medioPago);
+        break;
+      case 'no_form':
+        this.pagarPorNoForm(medioPago);
+        break;
+      default:
+        return;
+    }
+    return;
+
+  }
+
+  pagar(data){
+    Promise.all([
+      this.props.actions.postPagar(data),
+    ]).then(result =>{
       this.setState({
         activeStep: 2,
         pagar:data[0]});
-    }).catch(data => {
+    }).catch(result => {
+      const pagar = {
+          resultado: "ERROR",
+          mensajes: [],
+          estado: "NOOK",
+      }
+      if (result.error != undefined && result.error == 500){
+        result.descripcion != undefined
+          ? pagar.mensajes.push(result.descripcion)
+          : pagar.mensajes.push('');
+      }
       this.setState({
         activeStep: 2,
-        pagar:data
+        pagar
       });
+    });
+  }
+
+  handlerPagarPorBanelco = (token) =>{
+    this.pagar({
+      id_operacion: this.state.id_operacion,
+      medio_pago: this.state.selectedMedioPago.cod_medio_pago,
+      token,
+    });
+  }
+
+  handlePagarPorNoForm = (id_operacion, medio_pago) =>{
+    this.pagar({
+      id_operacion,
+      medio_pago
+    });
+  }
+
+  handlePagar = (token) => {
+    this.pagar({
+      id_operacion: this.state.id_operacion,
+      medio_pago: this.state.selectedMedioPago.cod_medio_pago,
+      token,
     });
   }
 
@@ -353,6 +437,7 @@ export default class Pago extends Component {
   }
 
   getStepContent(stepIndex) {
+    console.log("STEP INDEX: ", stepIndex);
     const {pagos, headerProps, classes} = this.props;
     switch (stepIndex) {
       case 0:
@@ -406,21 +491,34 @@ export default class Pago extends Component {
 
                 </div>
               )
-          )
+          );
+        break;
+      case 3 :
+        return (
+            <React.Fragment>
+              <Grid container justify="center">
+                <Grid item xs={12} sm={12}>
+                  <FormPagoBanelco
+                    medioPago = {this.state.selectedMedioPago}
+                    importe={formatNumber(this.state.importe)}
+                    handleOnClickVolver={this.handleBack}
+                    handleOnClickPagar={this.handlePagar}
+                  />
+                </Grid>
+              </Grid>
+            </React.Fragment>
+        );
         break;
       default:
-        return <div></div>
-    }
-  }
+        return
+        <React.Fragment>
+          <Grid container justify="center">
+            <Grid item xs={12} sm={12}>
 
-  handleCloseDialog = () => {
-    const dialogMessage = {
-      open:false,
-      title:'',
-      descripcion:'',
-      color:''
+            </Grid>
+          </Grid>
+        </React.Fragment>
     }
-    this.setState({dialogMessage});
   }
 
   render (){
@@ -437,10 +535,6 @@ export default class Pago extends Component {
           <div></div>
         </Header>
 
-        <DialogMessage
-          handleClose={this.handleCloseDialog}
-          {...this.state.dialogMessage}
-        />
 
         <BlockComponent blocking={loading}>
           <div className={classes.wrapper}>
