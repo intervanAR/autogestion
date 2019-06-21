@@ -108,7 +108,7 @@ export default class Pago extends Component {
         medio_pago: "",
         estado: "",
         detalle: [],
-        ticket:"",
+        comprobante:"",
       },
     })
   }
@@ -301,7 +301,7 @@ export default class Pago extends Component {
   }
 
   handleDescargar = () => {
-    this.state.pagar.ticket != undefined && downloadFile(this.state.pagar.ticket, "comprobante.pdf")
+    this.state.pagar.comprobante != undefined && downloadFile(this.state.pagar.comprobante, "comprobante.pdf")
 	}
 
   getMediosPagoContent(){
