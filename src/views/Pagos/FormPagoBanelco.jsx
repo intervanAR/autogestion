@@ -9,6 +9,7 @@ import CardFooter from "../../components/Card/CardFooter.jsx";
 import InputLabel from "@material-ui/core/InputLabel";
 import CustomInput from "../../components/CustomInput/CustomInput.jsx";
 import FormControl from "@material-ui/core/FormControl";
+import Datetime from "react-datetime";
 import Moment from 'moment';
 import Button from "../../components/CustomButtons/Button.jsx";
 import TextField from '@material-ui/core/TextField';
@@ -58,6 +59,7 @@ export default class FormPagoBanelco extends Component {
       customer_name:'',
       customer_doc_type:'',
       customer_doc_number:null,
+      fecha_actualizacion:this.props.fecha_actualizacion
     };
 
     this.reset = this.reset.bind(this);
@@ -115,16 +117,6 @@ export default class FormPagoBanelco extends Component {
   		};
   	};
 
-  	bindDateValue = key => {
-  		return {
-  			onChange: m => {
-  				const state = this.state;
-  				state[key] = m.format('DD/MM/YYYY');
-  				this.setState({state});
-  			},
-  			value: this.state[key] || ''
-  		};
-  	};
 
   	handleOnChangeValue(key) {
       if (this.validateNumber(key))
@@ -147,7 +139,7 @@ export default class FormPagoBanelco extends Component {
     }
 
     habilitarButtonPagar = () => {
-      return false;
+      return !this.props.habilitarButtonPagar;
     }
 
     handleVolver = () => {
@@ -205,69 +197,8 @@ export default class FormPagoBanelco extends Component {
 
     }
 
-/*
-    tokenizar = () => {
-      const publicApiKey = "e9cdb99fff374b5f91da4480c8dca741";
-      const urlSandbox = "https://developers.decidir.com/api/v2";
-      const inhabilitarCS = true;
-      //Para el ambiente de desarrollo
-      const decidir = new Decidir(urlSandbox, true);
-      //Se indica la public API Key
-      decidir.setPublishableKey(publicApiKey);
-      decidir.setTimeout(5000);//timeout de 5 segundos
-      //formulario
-      var form = document.createElement("form");
-      form.id = 'formulario'
-      form.method = "POST";
-      form.action = "";
-
-      var input1 = document.createElement("input");
-      var input2 = document.createElement("input");
-      var input3 = document.createElement("input");
-
-      input1.value = this.state.customer_name;
-      input1.setAttribute("data-decidir", "customer_name");
-
-      input2.value = this.state.customer_doc_type;
-      input2.setAttribute("data-decidir", "customer_doc_type");
-
-      input3.value = this.state.customer_doc_number;
-      input3.setAttribute("data-decidir", "customer_doc_number");
-
-      form.appendChild(input1);
-      form.appendChild(input2);
-      form.appendChild(input3);
-
-      console.log("askduasjd");
-      var event = new Event('submit', {
-            'bubbles'    : false, // Whether the event will bubble up through the DOM or not
-            'cancelable' : true  // Whether the event may be canceled or not
-        });
-
-
-      //Asigna la funcion de invocacion al evento de submit del formulario
-      form.addEventListener('submit',(event) => {
-          console.log("SEnding Form...");
-          event.preventDefault();
-          decidir.createToken(form, (status, response) => {
-            console.log("status: ",status);
-            console.log("response: ",response);
-            if (status != 200 && status != 201) {
-
-              //Manejo de error: Ver Respuesta de Error
-              //...codigo...
-            } else {
-              //Manejo de respuesta donde response = {token: "99ab0740-4ef9-4b38-bdf9-c4c963459b22"}
-              //..codigo...
-            }
-          });
-        });
-      form.dispatchEvent(event);
-    }
-    */
-
   render (){
-    console.log("RENDER FORMPAGO: ", this.state);
+
     const { medioPago, classes } = this.props; //Puede ser Tarjetas de Credito o Debito
     const isLoading = this.state.isLoading;
     const message = this.state.message;
@@ -339,6 +270,19 @@ export default class FormPagoBanelco extends Component {
 
                 <Grid container >
                   <GridItem xs={6} sm={3}>
+                    <InputLabel style={{float:'left', paddingTop:'10px'}}>Fecha de Actualización</InputLabel>
+                    <Datetime
+                      timeFormat={false}
+                      dateFormat={"DD/MM/YYYY"}
+                      inputProps={{
+                        required: true,
+                        disabled: this.props.medioPago.actualiza_fecha === 'S' ? false : true,
+                      }}
+                      locale="es-ES"
+                      {...this.props.bindDateValue('fecha_actualizacion')}
+                    />
+                  </GridItem>
+                  <GridItem xs={6} sm={3}>
                     <CustomInput
                       labelText="Importe"
                       id="importe"
@@ -349,7 +293,7 @@ export default class FormPagoBanelco extends Component {
                         required: true,
                         disabled:true,
                         type: "text",
-                        value: formatNumber(this.props.importe),
+                        value: this.props.importe,
                       }}
                     />
                   </GridItem>

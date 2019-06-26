@@ -90,13 +90,14 @@ export default class Pago extends Component {
 
   constructor (props){
     super(props);
+     //moment(new Date(), 'DD/MM/YYYY').format('YYYY-MM-DD'),
     this.state = Object.assign({
       messageColor:null,
       message:null,
       activeStep: 0,
       mediosPago : this.props.pagos.mediosPago,
       selectedMedioPago : null,
-      fecha_actualizacion:  moment(new Date(), 'DD/MM/YYYY').format('YYYY-MM-DD'),
+      fecha_actualizacion: null,
       id_operacion:null,
       pago:null,
       pagar:{
@@ -119,6 +120,45 @@ export default class Pago extends Component {
 		])
 	}
 
+  bindDateValue = key => {
+    if (key === 'fecha_actualizacion'){
+      return {
+        onChange: m => {
+          const fecha_actualizacion = m.format('YYYY-MM-DD');
+          const params = Object.assign({
+            usuario:  this.props.user != undefined ? this.props.user.id : null,
+            fecha_actualizacion: fecha_actualizacion,
+            deudas:this.props.pagos.resumenPrevio.map(deuda =>{return {id:deuda.id}}),
+          });
+          Promise.all([
+            this.props.actions.postResumenPago(params),
+          ]).then(data =>{
+            if (data[0].id_operacion != undefined){
+              const state = this.state;
+              state.id_operacion = data[0].id_operacion;
+              state.fecha_actualizacion = m;
+              state.importe = data[0].total;
+              this.setMessage({
+                message: 'El importe se ajusta calculando los intereses hasta la fecha de pago que ha seleccionado',
+                messageColor:'info'})
+              this.setState({state});
+            }
+          }).catch(error => {
+            this.setErrorMessage(error.message);
+          });
+        },
+        value: this.state[key].format('DD/MM/YYYY')
+      };
+    }
+    return {
+      onChange: m => {
+        const state = this.state;
+        state[key] = m.format('YYYY-MM-DD');
+        this.setState({state});
+      },
+      value: this.state[key].format('DD/MM/YYYY') || ''
+    };
+  };
   setErrorMessage(message) {
 		this.setMessage({messageColor: 'danger', message});
 	}
@@ -173,7 +213,6 @@ export default class Pago extends Component {
   }
 
   pagarPorDecidirBanelco = (medioPago)=>{
-    console.log("PAGARPORDECIDIRBANELCO");
     const state = this.state;
     const codGateway = medioPago.cod_gateway;
     const params = Object.assign({
@@ -186,11 +225,11 @@ export default class Pago extends Component {
       this.props.actions.getGatewayPago({codGateway}),
       this.props.actions.postResumenPago(params),
     ]).then(data =>{
-      console.log("DATA RESPONSE ",data);
       if (data[1].id_operacion != undefined){
         this.setState({ id_operacion:data[1].id_operacion,
                         importe:data[1].total,
                         activeStep: 3 ,
+                        fecha_actualizacion: data[1].fecha_actualizacion !== undefined ?  data[1].fecha_actualizacion : moment(new Date(), 'YYYY-MM-DD')
                       });
 
       }
@@ -225,7 +264,6 @@ export default class Pago extends Component {
   }
 
   handleNextMedioPago = (e) => {
-    console.log(this.state.selectedMedioPago);
     const medioPago = this.state.selectedMedioPago;
     switch (medioPago.formulario) {
       case 'decidir_tarjeta':
@@ -253,7 +291,7 @@ export default class Pago extends Component {
     ]).then(result =>{
       this.setState({
         activeStep: 2,
-        pagar:data[0]});
+        pagar:result[0]});
     }).catch(result => {
       const pagar = {
           resultado: "ERROR",
@@ -303,6 +341,28 @@ export default class Pago extends Component {
   handleDescargar = () => {
     this.state.pagar.comprobante != undefined && downloadFile(this.state.pagar.comprobante, "comprobante.pdf")
 	}
+
+  /*
+    Esta funcion verifica los parametros comunes a todas las formas de pago.
+    Debe extenderse si el medio de pago contiene parametros adicionales
+    RETURN boolean
+   */
+  habilitarButtonPagar = () => {
+
+    const state = this.state;
+    let habilitar = true;
+
+    if (state.id_operacion === '' || state.id_operacion === undefined || state.id_operacion === null)
+      habilitar = false;
+    if (state.fecha_actualizacion === '' || state.fecha_actualizacion === undefined || state.fecha_actualizacion === null)
+      habilitar = false;
+    if (state.fecha_actualizacion === '' || state.fecha_actualizacion === undefined || state.fecha_actualizacion === null)
+      habilitar = false;
+    if (state.selectedMedioPago === '' || state.selectedMedioPago === undefined || state.selectedMedioPago === null || state.selectedMedioPago.habilitado === 'N')
+      habilitar = false;
+
+    return habilitar;
+  }
 
   getMediosPagoContent(){
     const {mediosPago} = this.props.pagos;
@@ -437,7 +497,6 @@ export default class Pago extends Component {
   }
 
   getStepContent(stepIndex) {
-    console.log("STEP INDEX: ", stepIndex);
     const {pagos, headerProps, classes} = this.props;
     switch (stepIndex) {
       case 0:
@@ -453,6 +512,7 @@ export default class Pago extends Component {
                   importe={formatNumber(this.state.importe)}
                   handleOnClickVolver={this.handleBack}
                   handleOnClickPagar={this.handlePagar}
+                  habilitarButtonPagar={this.habilitarButtonPagar}
                 />
               </Grid>
             </Grid>
@@ -501,8 +561,11 @@ export default class Pago extends Component {
                   <FormPagoBanelco
                     medioPago = {this.state.selectedMedioPago}
                     importe={formatNumber(this.state.importe)}
+                    fechaActualizacion= {this.state.fecha_actualizacion}
+                    bindDateValue = {this.bindDateValue}
                     handleOnClickVolver={this.handleBack}
                     handleOnClickPagar={this.handlePagar}
+                    habilitarButtonPagar={this.habilitarButtonPagar}
                   />
                 </Grid>
               </Grid>

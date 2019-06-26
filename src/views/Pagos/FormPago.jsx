@@ -201,7 +201,7 @@ class FormPago extends Component {
   }
 
   habilitarButtonPagar = () => {
-    return false;
+    return !this.props.habilitarButtonPagar;
   }
 
   handleVolver = () => {
@@ -426,7 +426,7 @@ class FormPago extends Component {
                         required: true,
                         disabled:true,
                         type: "text",
-                        value: formatNumber(this.props.importe),
+                        value: this.props.importe,
                       }}
                     />
                   </GridItem>
