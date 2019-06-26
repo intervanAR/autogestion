@@ -193,7 +193,7 @@ export default class Pago extends Component {
     const codGateway = medioPago.cod_gateway;
     const params = Object.assign({
       usuario:  this.props.user != undefined ? this.props.user.id : null,
-      fecha_actualizacion: state.fecha_actualizacion,
+      fecha_actualizacion: null,
       deudas:this.props.pagos.resumenPrevio.map(deuda =>{return {id:deuda.id}}),
     });
 
@@ -217,7 +217,6 @@ export default class Pago extends Component {
     const codGateway = medioPago.cod_gateway;
     const params = Object.assign({
       usuario:  this.props.user != undefined ? this.props.user.id : null,
-      fecha_actualizacion: state.fecha_actualizacion,
       deudas:this.props.pagos.resumenPrevio.map(deuda =>{return {id:deuda.id}}),
     });
 
