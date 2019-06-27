@@ -279,7 +279,6 @@ export default class Pago extends Component {
         break;
       case 'no_form':
         if (this.state.selectedMedioPago.actualiza_fecha === 'S'){
-          console.log("noForm y actualiza_fecha = S");
           this.setState({
             activeStep: 4
           });

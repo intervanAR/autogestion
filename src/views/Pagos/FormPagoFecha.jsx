@@ -61,6 +61,9 @@ export default class FormPagoFecha extends Component {
   handleOnClickAceptar = () => {
     this.tokenizar();
   }
+  handlePagar = () => {
+    this.props.handleOnClickPagar();
+  }
   render (){
     const { classes } = this.props;
     return (
@@ -112,7 +115,7 @@ export default class FormPagoFecha extends Component {
               <GridItem xs={12} sm={3}>
                 <FormControl fullWidth={true} >
                   <Button
-                    disabled={false}
+                    disabled={this.habilitarButtonPagar()}
                     variant="contained"
                     color="success"
                     fullWidth={true}

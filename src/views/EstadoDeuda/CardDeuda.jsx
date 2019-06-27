@@ -163,14 +163,19 @@ class CardDeuda extends Component {
                         </Typography>
                       </GridItem>
                     }
+            {
+              importeDeuda > 0
+              && (
+                <GridItem item xs={12} sm={3} >
+                    <Button
+                      fullWidth={true}
+                      color="success"
+                      onClick={handleOnClickPagar}
+                    >Pagar</Button>
+                </GridItem>
+                )
+            }
 
-            <GridItem item xs={12} sm={3} >
-                <Button
-                  fullWidth={true}
-                  color="success"
-                  onClick={handleOnClickPagar}
-                >Pagar</Button>
-            </GridItem>
 
             <GridItem item xs={12}>
               <Typography className={classes.pos} color="textSecondary">

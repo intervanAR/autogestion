@@ -69,7 +69,9 @@ export default class NodoDeuda extends React.Component {
     var camino = state.camino
 		state.camino = this.push(camino, nodoSelected);
 		state.deuda = this.retornarDeuda(state.camino[state.camino.length-1], []);
-    state.importeDeuda = this.sumarImportesDeudas(state.deuda);
+		state.camino.length === 1
+			? state.importeDeuda = nodoSelected.total
+			: state.importeDeuda = this.sumarImportesDeudas(state.deuda);
     this.setState({
       ...state
     });
@@ -77,7 +79,7 @@ export default class NodoDeuda extends React.Component {
 
   handleOnClickIniPath = (path) => {
     const state = this.state
-    state.camino = []
+		state.camino = []
     this.setState({...state})
   }
 
@@ -87,7 +89,9 @@ export default class NodoDeuda extends React.Component {
     const index = this.state.camino.indexOf(item);
     state.camino = state.camino.slice(0, index+1);
     state.deuda = this.retornarDeuda(state.camino[state.camino.length - 1], []);
-    state.importeDeuda = this.sumarImportesDeudas(state.deuda);
+		state.camino.length === 1
+			? state.importeDeuda = state.camino[0].total
+			: state.importeDeuda = this.sumarImportesDeudas(state.deuda)
     this.setState({...state});
   }
 

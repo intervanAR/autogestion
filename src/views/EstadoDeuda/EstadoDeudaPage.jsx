@@ -69,11 +69,11 @@ export default class EstadoDeudaPage extends Component {
 		browserHistory.push('/estado-deuda-pago');
   }
 
-  render (){resumenDeudas
+  render (){
     const {classes, headerProps} = this.props;
 		const resumenDeudas = this.state.resumenDeudas;
-    const loading = resumenDeudas.loadingResumenDeudas; //Ver ....
-//Ver ....
+    const loading = resumenDeudas.loadingResumenDeudas;
+		
     return (
       <div>
         <Header
