@@ -6,6 +6,7 @@ import {connect} from "react-redux";
 import {bindActionCreators} from 'redux';
 import FormPago from './FormPago';
 import FormPagoBanelco from './FormPagoBanelco';
+import FormPagoFecha from './FormPagoFecha';
 //Actions connect
 import { postResumenPago , postPagar, getMediosPago, getGatewayPago } from '../../core/pagos/pagos-actions.js';
 //Utils
@@ -100,6 +101,7 @@ export default class Pago extends Component {
       fecha_actualizacion: null,
       id_operacion:null,
       pago:null,
+      importe:0,
       pagar:{
         resultado: "",
         mensajes: [],
@@ -147,9 +149,9 @@ export default class Pago extends Component {
             this.setErrorMessage(error.message);
           });
         },
-        value: this.state[key].format('DD/MM/YYYY')
+        value: this.state[key] !== null ? this.state[key].format('DD/MM/YYYY') : ''
       };
-    }
+    };
     return {
       onChange: m => {
         const state = this.state;
@@ -205,6 +207,7 @@ export default class Pago extends Component {
         this.setState({ id_operacion:data[1].id_operacion,
                         importe:data[1].total,
                         activeStep:1,
+                        fecha_actualizacion: moment(new Date(data[1].fecha_actualizacion),'YYYY-MM-DD')
                       });
       }
     }).catch(error => {
@@ -228,7 +231,7 @@ export default class Pago extends Component {
         this.setState({ id_operacion:data[1].id_operacion,
                         importe:data[1].total,
                         activeStep: 3 ,
-                        fecha_actualizacion: data[1].fecha_actualizacion !== undefined ?  data[1].fecha_actualizacion : moment(new Date(), 'YYYY-MM-DD')
+                        fecha_actualizacion: moment(new Date(data[1].fecha_actualizacion),'YYYY-MM-DD')
                       });
 
       }
@@ -241,12 +244,12 @@ export default class Pago extends Component {
 
   }
 
-  pagarPorNoForm = (medioPago)=>{
+  pagarPorNoForm = ()=>{
     const state = this.state;
-    const codGateway = medioPago.cod_gateway;
+    const codGateway = this.state.selectedMedioPago.cod_gateway;
     const params = Object.assign({
       usuario:  this.props.user != undefined ? this.props.user.id : null,
-      fecha_actualizacion: state.fecha_actualizacion,
+      fecha_actualizacion: state.fecha_actualizacion.format('YYYY-MM-DD'),
       deudas:this.props.pagos.resumenPrevio.map(deuda =>{return {id:deuda.id}}),
     });
 
@@ -275,13 +278,17 @@ export default class Pago extends Component {
         this.pagarPorRedLink(medioPago);
         break;
       case 'no_form':
-        this.pagarPorNoForm(medioPago);
+        if (this.state.selectedMedioPago.actualiza_fecha === 'S'){
+          console.log("noForm y actualiza_fecha = S");
+          this.setState({
+            activeStep: 4
+          });
+        }
         break;
       default:
         return;
     }
     return;
-
   }
 
   pagar(data){
@@ -516,7 +523,7 @@ export default class Pago extends Component {
               </Grid>
             </Grid>
           </React.Fragment>
-        )
+        );
         break;
       case 2:
         return (
@@ -571,12 +578,24 @@ export default class Pago extends Component {
             </React.Fragment>
         );
         break;
+      case 4 :
+        return (
+            <React.Fragment>
+              <FormPagoFecha
+                bindDateValue={this.bindDateValue}
+                importe={formatNumber(this.state.importe)}
+                handleOnClickVolver={this.handleBack}
+                handleOnClickPagar={this.pagarPorNoForm}
+                habilitarButtonPagar={this.habilitarButtonPagar}
+              />
+            </React.Fragment>
+          )
+        break;
       default:
         return
         <React.Fragment>
-          <Grid container justify="center">
+          <Grid container justify="center" style={{backgroundColor:'red'}}>
             <Grid item xs={12} sm={12}>
-
             </Grid>
           </Grid>
         </React.Fragment>
