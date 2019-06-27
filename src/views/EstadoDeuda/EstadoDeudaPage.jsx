@@ -62,9 +62,9 @@ export default class EstadoDeudaPage extends Component {
 		return this.props.actions.getResumenDeuda({tipoImponible, nroImponible, usuario });
 	}
 
-  handlePagarDeudas = (deudas) => {
+  handlePagarDeudas = (deuda) => {
 		Promise.all([
-			this.props.actions.setResumenPrevio(deudas),
+			this.props.actions.setResumenPrevio(deuda),
 		])
 		browserHistory.push('/estado-deuda-pago');
   }
@@ -73,7 +73,7 @@ export default class EstadoDeudaPage extends Component {
     const {classes, headerProps} = this.props;
 		const resumenDeudas = this.state.resumenDeudas;
     const loading = resumenDeudas.loadingResumenDeudas;
-		
+
     return (
       <div>
         <Header

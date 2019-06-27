@@ -107,7 +107,8 @@ export default class NodoDeuda extends React.Component {
   }
 
 	handleOnClickPagar = () =>{
-		this.props.handleOnClickPagar(this.state.deuda);
+		const deuda = this.state.deuda.length === 0 ? [this.props.datos] : this.state.deuda
+		this.props.handleOnClickPagar(deuda);
 	}
 
   render() {
