@@ -149,7 +149,7 @@ export default class Pago extends Component {
             this.setErrorMessage(error.message);
           });
         },
-        value: this.state[key] !== null ? this.state[key].format('DD/MM/YYYY') : ''
+        value : this.state[key] !== null ? moment(this.state[key],'YYYY-MM-DD').format('DD/MM/YYYY') : '' ,
       };
     };
     return {
@@ -207,7 +207,7 @@ export default class Pago extends Component {
         this.setState({ id_operacion:data[1].id_operacion,
                         importe:data[1].total,
                         activeStep:1,
-                        fecha_actualizacion: moment(new Date(data[1].fecha_actualizacion),'YYYY-MM-DD')
+                        fecha_actualizacion: data[1].fecha_actualizacion,
                       });
       }
     }).catch(error => {
@@ -231,7 +231,7 @@ export default class Pago extends Component {
         this.setState({ id_operacion:data[1].id_operacion,
                         importe:data[1].total,
                         activeStep: 3 ,
-                        fecha_actualizacion: moment(new Date(data[1].fecha_actualizacion),'YYYY-MM-DD')
+                        fecha_actualizacion: data[1].fecha_actualizacion,
                       });
 
       }
@@ -249,7 +249,7 @@ export default class Pago extends Component {
     const codGateway = this.state.selectedMedioPago.cod_gateway;
     const params = Object.assign({
       usuario:  this.props.user != undefined ? this.props.user.id : null,
-      fecha_actualizacion: state.fecha_actualizacion.format('YYYY-MM-DD'),
+      fecha_actualizacion: state.fecha_actualizacion,
       deudas:this.props.pagos.resumenPrevio.map(deuda =>{return {id:deuda.id}}),
     });
 
@@ -279,9 +279,26 @@ export default class Pago extends Component {
         break;
       case 'no_form':
         if (this.state.selectedMedioPago.actualiza_fecha === 'S'){
-          this.setState({
-            activeStep: 4
+          const codGateway = this.state.selectedMedioPago.cod_gateway;
+          const params = Object.assign({
+            usuario:  this.props.user != undefined ? this.props.user.id : null,
+            fecha_actualizacion: null,
+            deudas:this.props.pagos.resumenPrevio.map(deuda =>{return {id:deuda.id}}),
           });
+          Promise.all([
+            this.props.actions.getGatewayPago({codGateway}),
+            this.props.actions.postResumenPago(params),
+          ]).then(data =>{
+            this.setState({
+              id_operacion: data[1].id_operacion,
+              importe:data[1].total,
+              fecha_actualizacion:data[1].fecha_actualizacion,
+              activeStep: 4
+            })
+          }).catch(error => {
+            this.setErrorMessage(error.message);
+          });
+
         }
         break;
       default:

@@ -58,7 +58,7 @@ export default class NodoDeuda extends React.Component {
 	 */
 	push = (camino, nodo)=>{
 		camino.push(nodo);
-		if (nodo.detalle.length == 1 && nodo.tipo.detalle == 'res'){
+		if (camino.length !== 1 && nodo.detalle.length == 1 && nodo.tipo.detalle == 'res'){
 			camino = this.push(camino, nodo.detalle[0]);
 		}
 		return camino;
